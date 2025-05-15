@@ -59,7 +59,7 @@ jobs:
           distrobox create --name $CONTAINER_NAME --image ${{ inputs.distro }} \
             --additional-packages "git systemd ${{ inputs.package_man }} sudo $ADDITIONAL_PKG" \
             --init-hooks "$UPDATE_COMMAND" \
-            --init --pull --root --unshare-all
+            --init --pull --root --unshare-all --absolutely-disable-root-password-i-am-really-positively-sure
       
       - name: Clone FOG
         run: distrobox enter --root $CONTAINER_NAME -- git clone -b dev-branch https://github.com/FOGProject/fogproject.git
