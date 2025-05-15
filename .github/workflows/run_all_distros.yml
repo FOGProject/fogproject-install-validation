@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   get-all-distros-matrix:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     
@@ -37,7 +37,7 @@ jobs:
 
   run-distro:
     needs: get-all-distros-matrix
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         ${{ fromJson(needs.get-all-distros-matrix.outputs.matrix) }}
@@ -53,7 +53,7 @@ jobs:
   
   check-if-successful:
     needs: [get-all-distros-matrix, run-distro]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
