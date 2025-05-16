@@ -25,7 +25,7 @@ jobs:
       - name: Make container name
         run: |
           input_distro=${{ inputs.distro }}
-          distro_name_and_ver=$(echo input_distro | awk -F '/' '{print $NF}')
+          distro_name_and_ver=$(echo $input_distro | awk -F '/' '{print $NF}')
           container_name=${distro_name_and_ver/:/_}
           echo "CONTAINER_NAME=$container_name" >> $GITHUB_ENV
       
