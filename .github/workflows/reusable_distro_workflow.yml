@@ -72,13 +72,10 @@ jobs:
       - name: Clone FOG
         run: distrobox enter --root $CONTAINER_NAME --verbose -- git clone -b dev-branch https://github.com/FOGProject/fogproject.git
 
-      - name: Make runner sudo with no password
-        run:  |
-          distrobox enter $CONTAINER_NAME --root -- bash -c '
-            echo "runner ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/runner
-            chmod 0440 /etc/sudoers.d/runner
-          '
-          
+      - name: Hacky FOG chages
+        run: |
+          distrobox enter --root $CONTAINER_NAME --verbose -- sed -i 's/\[\[ ! \$EUID -eq 0 \]\]/[[ $EUID -ne 0 || $USER != "runner" ]]/' ./fogproject/bin/installfog.sh -y
+      
       - name: Install FOG
         # run: distrobox enter --root $CONTAINER_NAME --verbose -- whoami
-        run: distrobox enter --root $CONTAINER_NAME --verbose -- sudo ./fogproject/bin/installfog.sh -y
+        run: distrobox enter --root $CONTAINER_NAME --verbose -- ./fogproject/bin/installfog.sh -y
