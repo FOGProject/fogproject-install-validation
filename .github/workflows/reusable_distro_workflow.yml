@@ -23,7 +23,7 @@ jobs:
     
     steps:
       - name: Switch to root
-        run: su
+        run: sudo -i
         
       - name: Make container name
         run: |
