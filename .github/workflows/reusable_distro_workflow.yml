@@ -78,4 +78,4 @@ jobs:
       
       - name: Install FOG
         # run: distrobox enter --root $CONTAINER_NAME --verbose -- whoami
-        run: distrobox enter --root $CONTAINER_NAME --verbose -- su -c ./fogproject/bin/installfog.sh -y
+        run: distrobox enter --root $CONTAINER_NAME --verbose -- su -c "./fogproject/bin/installfog.sh -y"
