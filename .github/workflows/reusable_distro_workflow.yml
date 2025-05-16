@@ -53,7 +53,6 @@ jobs:
 
       - name: Set up pre-init hook
         run: |
-          distrobox enter mybox -- bash -c 'echo "$USER ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/$USER && sudo chmod 0440 /etc/sudoers.d/$USER'
           if [[ ${{ inputs.package_man }} == "dnf" ]]; then
             echo "PRE_INIT_HOOK=echo 'distrobox ALL=(ALL) NOPASSWD: ALL' | sudo tee /etc/sudoers.d/$USER && sudo chmod 0440 /etc/sudoers.d/$USER" >> $GITHUB_ENV
           else
