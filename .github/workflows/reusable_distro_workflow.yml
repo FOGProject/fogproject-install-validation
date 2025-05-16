@@ -62,7 +62,7 @@ jobs:
             --init --pull --root --unshare-all --absolutely-disable-root-password-i-am-really-positively-sure
       
       - name: Clone FOG
-        run: distrobox enter --root $CONTAINER_NAME -- git clone -b dev-branch https://github.com/FOGProject/fogproject.git
+        run: distrobox enter --root $CONTAINER_NAME --verbose -- git clone -b dev-branch https://github.com/FOGProject/fogproject.git
       
       - name: Install FOG
-        run: distrobox enter --root $CONTAINER_NAME -- sudo ./fogproject/bin/installfog.sh -y
+        run: distrobox enter --root $CONTAINER_NAME --verbose -- sudo ./fogproject/bin/installfog.sh -y
