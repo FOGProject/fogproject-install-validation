@@ -51,6 +51,15 @@ jobs:
             echo "UPDATE_COMMAND=dnf update -y" >> $GITHUB_ENV
           fi
 
+      - name: Set up pre-init hook
+        run: |
+          distrobox enter mybox -- bash -c 'echo "$USER ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/$USER && sudo chmod 0440 /etc/sudoers.d/$USER'
+          if [[ ${{ inputs.package_man }} == "dnf" ]]; then
+            echo "PRE_INIT_HOOK=echo 'distrobox ALL=(ALL) NOPASSWD: ALL' | sudo tee /etc/sudoers.d/$USER && sudo chmod 0440 /etc/sudoers.d/$USER" >> $GITHUB_ENV
+          else
+            echo "PRE_INIT_HOOK=" >> $GITHUB_ENV
+          fi
+
       - name: Install Distrobox
         run: curl -s https://raw.githubusercontent.com/89luca89/distrobox/main/install | sudo sh
 
@@ -58,7 +67,7 @@ jobs:
         run: |
           distrobox create --name $CONTAINER_NAME --image ${{ inputs.distro }} \
             --additional-packages "git systemd ${{ inputs.package_man }} sudo $ADDITIONAL_PKG" \
-            --init-hooks "$UPDATE_COMMAND" \
+            --pre-init-hooks "$PRE_INIT_HOOK" --init-hooks "$UPDATE_COMMAND" \
             --init --pull --root --unshare-all --absolutely-disable-root-password-i-am-really-positively-sure
       
       - name: Clone FOG
