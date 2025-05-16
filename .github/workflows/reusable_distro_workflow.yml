@@ -74,8 +74,11 @@ jobs:
 
       - name: Make runner sudo with no password
         run:  |
-          distrobox enter --root $CONTAINER_NAME --verbose -- bash -c "echo 'runner ALL=(ALL) NOPASSWD: ALL' | sudo tee /etc/sudoers.d/runner && sudo chmod 0440 /etc/sudoers.d/runner"
-      
+          distrobox enter $CONTAINER_NAME --root -- bash -c '
+            echo "runner ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/runner
+            chmod 0440 /etc/sudoers.d/runner
+          '
+          
       - name: Install FOG
         # run: distrobox enter --root $CONTAINER_NAME --verbose -- whoami
         run: distrobox enter --root $CONTAINER_NAME --verbose -- sudo ./fogproject/bin/installfog.sh -y
