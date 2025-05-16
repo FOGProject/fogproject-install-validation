@@ -19,16 +19,13 @@ defaults:
 
 jobs:
   reusable-workflow:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     
     steps:
-      - name: Switch to root
-        run: sudo -i
-        
       - name: Make container name
         run: |
           input_distro=${{ inputs.distro }}
-          distro_name_and_ver=$(echo $input_distro | awk -F '/' '{print $NF}')
+          distro_name_and_ver=$(echo input_distro | awk -F '/' '{print $NF}')
           container_name=${distro_name_and_ver/:/_}
           echo "CONTAINER_NAME=$container_name" >> $GITHUB_ENV
       
@@ -49,36 +46,23 @@ jobs:
       - name: Update container
         run: |
           if [[ ${{ inputs.package_man }} == "apt" ]]; then
-            echo "UPDATE_COMMAND=apt update && apt upgrade -y" >> $GITHUB_ENV
+            echo "UPDATE_COMMAND=sudo apt update && sudo apt upgrade -y" >> $GITHUB_ENV
           else
-            echo "UPDATE_COMMAND=dnf update -y" >> $GITHUB_ENV
+            echo "UPDATE_COMMAND=sudo dnf update -y" >> $GITHUB_ENV
           fi
 
-      # - name: Set up pre-init hook
-      #   run: |
-      #     if [[ ${{ inputs.package_man }} == "dnf" ]]; then
-      #       echo "PRE_INIT_HOOK=echo 'distrobox ALL=(ALL) NOPASSWD: ALL' | tee /etc/sudoers.d/$USER && chmod 0440 /etc/sudoers.d/$USER" >> $GITHUB_ENV
-      #     else
-      #       echo "PRE_INIT_HOOK=" >> $GITHUB_ENV
-      #     fi
-
       - name: Install Distrobox
-        run: curl -s https://raw.githubusercontent.com/89luca89/distrobox/main/install | sh
+        run: curl -s https://raw.githubusercontent.com/89luca89/distrobox/main/install | sudo sh
 
       - name: Create Distrobox
         run: |
           distrobox create --name $CONTAINER_NAME --image ${{ inputs.distro }} \
-            --additional-packages "git systemd ${{ inputs.package_man }} $ADDITIONAL_PKG" \
+            --additional-packages "git systemd ${{ inputs.package_man }} sudo $ADDITIONAL_PKG" \
             --init-hooks "$UPDATE_COMMAND" \
-            --init --pull --root --unshare-all --absolutely-disable-root-password-i-am-really-positively-sure
+            --init --pull --root --unshare-all
       
       - name: Clone FOG
-        run: distrobox enter $CONTAINER_NAME --root -- git clone -b dev-branch https://github.com/FOGProject/fogproject.git
-
-      # - name: Hacky FOG chages
-      #   run: |
-      #     distrobox enter --root $CONTAINER_NAME --verbose -- sed -i 's|\[\[ ! \$EUID -eq 0 \]\]|\[\[ ! \$EUID -eq 0 \]\] \&\& \[\[ \$USER != "runner" \]\]|g' ./fogproject/bin/installfog.sh
+        run: distrobox enter --root $CONTAINER_NAME --verbose -- git clone -b dev-branch https://github.com/FOGProject/fogproject.git
       
       - name: Install FOG
-        # run: distrobox enter --root $CONTAINER_NAME --verbose -- whoami
-        run: distrobox enter $CONTAINER_NAME --root --verbose -- sudo ./fogproject/bin/installfog.sh -y
+        run: distrobox enter --root $CONTAINER_NAME --verbose -- sudo ./fogproject/bin/installfog.sh -y
