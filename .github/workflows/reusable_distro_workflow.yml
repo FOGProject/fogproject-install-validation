@@ -60,7 +60,8 @@ jobs:
             --additional-packages "git systemd ${{ inputs.package_man }} sudo $ADDITIONAL_PKG" \
             --init-hooks "$UPDATE_COMMAND" \
             --init --pull --root --unshare-all \
-            --additional-flags "--userns=keep-id:uid=0,gid=0" --additional-flags "--user 0"
+            --additional-flags "--userns=keep-id" --additional-flags "--user 0" \
+            --absolutely-disable-root-password-i-am-really-positively-sure
             
       - name: Debug - Confirm user inside container
         run: distrobox enter --root $CONTAINER_NAME -- id
