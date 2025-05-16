@@ -59,15 +59,15 @@ jobs:
           distrobox create --name $CONTAINER_NAME --image ${{ inputs.distro }} \
             --additional-packages "git systemd ${{ inputs.package_man }} sudo $ADDITIONAL_PKG" \
             --init-hooks "$UPDATE_COMMAND" \
-            --init --pull --root --unshare-all --verbose \
+            --init --pull  --unshare-all --verbose \
             --additional-flags "--userns=keep-id" --additional-flags "--user 0" \
             --absolutely-disable-root-password-i-am-really-positively-sure
             
       - name: Debug - Confirm user inside container
-        run: distrobox enter --root $CONTAINER_NAME --verbose -- id
+        run: distrobox enter  $CONTAINER_NAME --verbose -- id
       
       - name: Clone FOG
-        run: distrobox enter --root $CONTAINER_NAME --verbose -- git clone -b dev-branch https://github.com/FOGProject/fogproject.git
+        run: distrobox enter  $CONTAINER_NAME --verbose -- git clone -b dev-branch https://github.com/FOGProject/fogproject.git
       
       - name: Install FOG
-        run: distrobox enter --root $CONTAINER_NAME --verbose -- bash -c 'sudo ./fogproject/bin/installfog.sh -y'
+        run: distrobox enter  $CONTAINER_NAME --verbose -- bash -c 'sudo ./fogproject/bin/installfog.sh -y'
