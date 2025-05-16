@@ -61,7 +61,8 @@ jobs:
             --init-hooks "$UPDATE_COMMAND" \
             --init --pull --root --unshare-all \
             --additional-flags "--user 0"
-
+      - name: Debug - Confirm user inside container
+        run: distrobox enter --root $CONTAINER_NAME -- id
       
       - name: Clone FOG
         run: distrobox enter --root $CONTAINER_NAME --verbose -- git clone -b dev-branch https://github.com/FOGProject/fogproject.git
