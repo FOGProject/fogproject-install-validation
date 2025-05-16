@@ -59,10 +59,12 @@ jobs:
           distrobox create --name $CONTAINER_NAME --image ${{ inputs.distro }} \
             --additional-packages "git systemd ${{ inputs.package_man }} sudo $ADDITIONAL_PKG" \
             --init-hooks "$UPDATE_COMMAND" \
-            --init --pull --root --unshare-all
+            --init --pull --root --unshare-all \
+            --additional-flags "--user 0"
+
       
       - name: Clone FOG
         run: distrobox enter --root $CONTAINER_NAME --verbose -- git clone -b dev-branch https://github.com/FOGProject/fogproject.git
       
       - name: Install FOG
-        run: distrobox enter --root $CONTAINER_NAME --verbose -- sudo ./fogproject/bin/installfog.sh -y
+        run: distrobox enter --root $CONTAINER_NAME --verbose -- ./fogproject/bin/installfog.sh -y
