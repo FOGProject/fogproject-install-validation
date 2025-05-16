@@ -74,7 +74,7 @@ jobs:
 
       - name: Hacky FOG chages
         run: |
-          distrobox enter --root $CONTAINER_NAME --verbose -- sed -i 's/\[\[ ! \$EUID -eq 0 \]\]/[[ $EUID -ne 0 || $USER != "runner" ]]/' ./fogproject/bin/installfog.sh
+          distrobox enter --root $CONTAINER_NAME --verbose -- sed -i 's/\[\[ ! \$EUID -eq 0 \]\]/[[ $EUID -ne 0 && $USER != "runner" ]]/' ./fogproject/bin/installfog.sh
       
       - name: Install FOG
         # run: distrobox enter --root $CONTAINER_NAME --verbose -- whoami
