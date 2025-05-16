@@ -46,13 +46,13 @@ jobs:
       - name: Update container
         run: |
           if [[ ${{ inputs.package_man }} == "apt" ]]; then
-            echo "UPDATE_COMMAND=sudo apt update && sudo apt upgrade -y" >> $GITHUB_ENV
+            echo "UPDATE_COMMAND=apt update && apt upgrade -y" >> $GITHUB_ENV
           else
-            echo "UPDATE_COMMAND=sudo dnf update -y" >> $GITHUB_ENV
+            echo "UPDATE_COMMAND=dnf update -y" >> $GITHUB_ENV
           fi
 
       - name: Install Distrobox
-        run: curl -s https://raw.githubusercontent.com/89luca89/distrobox/main/install | sudo sh
+        run: curl -s https://raw.githubusercontent.com/89luca89/distrobox/main/install | sh
 
       - name: Create Distrobox
         run: |
