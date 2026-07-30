@@ -39,13 +39,18 @@ jobs:
           fi
       
           if [ "$NEED_UPGRADE" = "1" ]; then
-            echo "apt version too old (or missing), upgrading via apt..."
-            sudo apt-get update -qq
-            sudo apt-get install -y crun || true
-      
+            echo "apt version too old (or missing), attempting apt upgrade..."
+            set +e
+            sudo apt-get update -qq && sudo apt-get install -y crun
+            APT_STATUS=$?
+            set -e
+            if [ $APT_STATUS -ne 0 ]; then
+              echo "apt-get update/install failed (exit $APT_STATUS) — likely a transient mirror issue, falling through to GitHub release download"
+            fi
+
             NEW=$(crun --version 2>/dev/null | head -1 | grep -oP '\d+\.\d+\.\d+')
             if [ -z "$NEW" ] || ! dpkg --compare-versions "$NEW" ge "1.14.3"; then
-              echo "apt version still too old ($NEW), pulling latest release from GitHub..."
+              echo "apt path didn't produce a new enough crun, pulling latest release from GitHub..."
       
               RELEASE_JSON=$(curl -sSL \
                 -H "Authorization: Bearer ${GH_TOKEN}" \
