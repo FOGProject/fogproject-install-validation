@@ -57,12 +57,12 @@ jobs:
                 echo "GitHub API call failed: $(echo "$RELEASE_JSON" | jq -r '.message')"
                 echo "Falling back to pinned known-good crun release."
                 # Update this URL if the pinned version below ever goes stale/EOL:
-                DOWNLOAD_URL="https://github.com/containers/crun/releases/download/1.19.1/crun-1.19.1-linux-amd64"
+                DOWNLOAD_URL="https://github.com/containers/crun/releases/download/1.28/crun-1.28-linux-amd64"
               else
                 DOWNLOAD_URL=$(echo "$RELEASE_JSON" | jq -r '.assets[] | select(.name == "crun-'"$(echo "$RELEASE_JSON" | jq -r .tag_name)"'-linux-amd64") | .browser_download_url')
                 if [ -z "$DOWNLOAD_URL" ] || [ "$DOWNLOAD_URL" = "null" ]; then
                   echo "Couldn't find a matching linux-amd64 asset in the release, falling back to pinned version."
-                  DOWNLOAD_URL="https://github.com/containers/crun/releases/download/1.19.1/crun-1.19.1-linux-amd64"
+                  DOWNLOAD_URL="https://github.com/containers/crun/releases/download/1.28/crun-1.28-linux-amd64"
                 fi
               fi
       
