@@ -23,8 +23,9 @@ jobs:
     
     steps:
       - name: Ensure crun is new enough for distrobox
+        env: 
+          GH_TOKEN: ${{ github.token }}
         run: |
-          echo "Checking for pre-existing crun binary..."
           which crun || echo "crun not found on PATH yet"
       
           set +e
@@ -45,26 +46,50 @@ jobs:
             NEW=$(crun --version 2>/dev/null | head -1 | grep -oP '\d+\.\d+\.\d+')
             if [ -z "$NEW" ] || ! dpkg --compare-versions "$NEW" ge "1.14.3"; then
               echo "apt version still too old ($NEW), pulling latest release from GitHub..."
-              # Pin a known-good version below if the latest release ever regresses:
-              # CRUN_VERSION="1.19.1"
-              CRUN_VERSION=$(curl -sSL https://api.github.com/repos/containers/crun/releases/latest | grep -oP '"tag_name":\s*"\K[^"]+')
-              echo "Latest crun release: $CRUN_VERSION"
-              curl -sSL -o /tmp/crun \
-                "https://github.com/containers/crun/releases/download/${CRUN_VERSION}/crun-${CRUN_VERSION}-linux-amd64"
+      
+              RELEASE_JSON=$(curl -sSL \
+                -H "Authorization: Bearer ${GH_TOKEN}" \
+                -H "Accept: application/vnd.github+json" \
+                https://api.github.com/repos/containers/crun/releases/latest)
+      
+              # Detect rate-limiting / API failure before trying to parse anything from it
+              if echo "$RELEASE_JSON" | jq -e '.message' >/dev/null 2>&1; then
+                echo "GitHub API call failed: $(echo "$RELEASE_JSON" | jq -r '.message')"
+                echo "Falling back to pinned known-good crun release."
+                # Update this URL if the pinned version below ever goes stale/EOL:
+                DOWNLOAD_URL="https://github.com/containers/crun/releases/download/1.19.1/crun-1.19.1-linux-amd64"
+              else
+                DOWNLOAD_URL=$(echo "$RELEASE_JSON" | jq -r '.assets[] | select(.name == "crun-'"$(echo "$RELEASE_JSON" | jq -r .tag_name)"'-linux-amd64") | .browser_download_url')
+                if [ -z "$DOWNLOAD_URL" ] || [ "$DOWNLOAD_URL" = "null" ]; then
+                  echo "Couldn't find a matching linux-amd64 asset in the release, falling back to pinned version."
+                  DOWNLOAD_URL="https://github.com/containers/crun/releases/download/1.19.1/crun-1.19.1-linux-amd64"
+                fi
+              fi
+      
+              echo "Downloading crun from: $DOWNLOAD_URL"
+              curl -sSL -f -o /tmp/crun "$DOWNLOAD_URL"
               chmod +x /tmp/crun
+      
+              # Sanity check the binary actually works before replacing the system one
+              if ! /tmp/crun --version >/dev/null 2>&1; then
+                echo "Downloaded crun binary is broken, aborting."
+                exit 1
+              fi
+      
               sudo mv /tmp/crun "$(command -v crun)"
             fi
           fi
+      
           echo "Final crun binary location: $(which crun)"
           echo "Final crun version: $(crun --version | head -1)"
-      
+        
       - name: Make container name
         run: |
           input_distro=${{ inputs.distro }}
           distro_name_and_ver=$(echo $input_distro | awk -F '/' '{print $NF}')
           container_name=${distro_name_and_ver/:/_}
           echo "CONTAINER_NAME=$container_name" >> $GITHUB_ENV
-      
+
       - name: Check if additional package is needed by package manager
         run: |
           if [[ ${{ inputs.package_man }} == "apt" ]]; then
@@ -72,7 +97,7 @@ jobs:
           else
             echo "ADDITIONAL_PKG=" >> $GITHUB_ENV
           fi
-      
+
       - name: Add additional packages if passed as an input
         if: ${{ inputs.additional_packages }}
         run: |
